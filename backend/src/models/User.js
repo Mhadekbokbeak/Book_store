@@ -40,8 +40,8 @@ userSchema.pre('save', async function (next)  {
 
 
 // Method for check password when login
-userSchema.method.matchPassword = async function (enterPassword) {
-          return await bcrypt.compare(enterPassword,this.password)
+userSchema.methods.matchPassword = async function (enterPassword) {
+          return await bcrypt.compare(enterPassword,this.password);
 }
 
 module.exports = mongoose.model('User', userSchema);

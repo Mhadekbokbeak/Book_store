@@ -36,3 +36,30 @@ exports.registerUser = async (req,res) => {
                     res.status(500).json({ message : error.message});
           }
 };
+
+// @desc Login user
+// @routes POST /api/auth/login
+exports.loginUser = async (req,res) => {
+          try {
+                    const {email,password} = req.body;
+
+                    // Find user follow email req
+                    const user = User.findOne({ email });
+
+                    // Check user and compare password
+                    if (user && (await user.matchPassword(password))) {
+                              return res.json({
+                                        _id:user._id,
+                                        name:user.name,
+                                        email:user.email,
+                                        role:user.role,
+                                        token:generateToken(user._id),
+                              });
+                    } 
+                    else {
+                              return res.status(401).json({ message : "Invalid email or password"});
+                    }
+          } catch (error) {
+                    return res.status(500).json({ message : error.message});
+          }
+}
