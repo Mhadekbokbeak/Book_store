@@ -3,6 +3,7 @@ const dotenv = require("dotenv");
 const cors = require("cors");
 const connectDB = require("./config/db");
 
+
 dotenv.config();
 
 // Connect DB mongo
@@ -14,6 +15,9 @@ const app = express();
 // Middleware 
 app.use(cors());
 app.use(express.json());
+
+// Routes
+app.use('/api/auth', require('./routes/authRoutes'));
 
 // Health Check
 app.get("/api/health", (req,res) => {

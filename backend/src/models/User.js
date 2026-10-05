@@ -31,12 +31,11 @@ const userSchema = new mongoose.Schema({
 // Hash password before save in DATABASE
 userSchema.pre('save', async function (next)  {
           if (!this.isModified('password')) {
-                    return next(); // save Request Timeout 
+                    return;
           } // every edit ( fied name or email or number) every hash every change til user used old password
 
           const salt = await bcrypt.genSalt(10);
           this.password = await bcrypt.hash(this.password, salt);
-          next();
 });
 
 
