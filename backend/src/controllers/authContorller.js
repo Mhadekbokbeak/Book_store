@@ -44,7 +44,7 @@ exports.loginUser = async (req,res) => {
                     const {email,password} = req.body;
 
                     // Find user follow email req
-                    const user = User.findOne({ email });
+                    const user = await User.findOne({ email }).select('+password');
 
                     // Check user and compare password
                     if (user && (await user.matchPassword(password))) {
@@ -61,5 +61,18 @@ exports.loginUser = async (req,res) => {
                     }
           } catch (error) {
                     return res.status(500).json({ message : error.message});
+          }
+};
+
+
+// @desc Get user profile (Protect route)
+// @Route  GET /api/auth/me
+
+exports.getMe = async (req,res) => {
+          try {
+                    const user = await User.findById(req.user.id).select('-password');
+                    res.json(user);
+          } catch (error){
+                    return res.status(500).json({ message : error.message });
           }
 }

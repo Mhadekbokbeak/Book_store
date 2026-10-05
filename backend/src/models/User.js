@@ -19,6 +19,7 @@ const userSchema = new mongoose.Schema({
                     type:String,
                     required:[true,'Password is required'],
                     minlength:6,
+                    selcet:false, // ซ่อนฟิลด์นี้โดยอัตโนมัติทุกการ Query
 
           },
           role:{
