@@ -6,6 +6,6 @@ const { admin } = require('../middleware/adminMiddleware');
 
 router.route('/').get(getCategories).post(protect,admin,createCategory);
 
-router.route('/').put(protect,admin,updateCategory).delete(protect,admin,deleteCategory);
+router.route('/:id').put(protect,admin,updateCategory).delete(protect,admin,deleteCategory);
 
 module.exports = router;

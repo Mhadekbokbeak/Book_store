@@ -18,6 +18,8 @@ app.use(express.json());
 
 // Routes
 app.use('/api/auth', require('./routes/authRoutes'));
+app.use('/api/categories',require('./routes/categoryRoutes'));
+app.use('/api/books',require('./routes/bookRoutes'));
 
 // Health Check
 app.get("/api/health", (req,res) => {
