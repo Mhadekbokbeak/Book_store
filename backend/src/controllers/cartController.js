@@ -80,3 +80,84 @@ exports.addToCart = async (req,res) => {
                     res.status(500).json({message:error.message})
           }
 }
+
+
+// @desc    Update item quantity in cart
+// @route   PUT /api/cart/:bookId
+// @access  Private
+
+exports.updateCartItem = async (req,res) => {
+          try {
+                    const {quantity} = req.body;
+                    const {bookId} = req.params;
+
+                    if (quantity < 1) {
+                              return res.status(400).json({ message : "Quantity must be at least 1!"});
+                    } 
+
+                    const book = await Book.findById(bookId);
+
+                    if(!book) {
+                              return res.status(400).json({ message : "Book not found!"});
+                    }
+
+                    if (book.stock < quantity) {
+                              return res.status(400).json({ message : "Not enough stock avaiable!"});
+                    }
+
+                    const cart = await Cart.findOne({ user:req.user._id});
+                    if (!cart) {
+                              return res.status(400).json({ message : "Cart not found!"});
+                    }
+
+                    const itemIndex = cart.items.findIndex(
+                              (item)=> item.book.toString() === bookId
+                    )
+
+                    if(itemIndex > -1) {
+                              cart.items[itemIndex].quantity = quantity;
+                              await cart.save();
+                    } else {
+                              return res.status(404).json({ message : "Item not found in cart"});
+                    }
+
+                    const updateCart = await Cart.findById(cart._id).populate({
+                              path:"items.book",
+                              select:"title author price coverImage stock",
+                    })
+
+                    res.json(updateCart)
+          } catch (error) {
+                    return res.status(500).json({ message : error.message});
+          }
+}
+
+// @desc    Remove item from cart
+// @route   DELETE /api/cart/:bookId
+// @access  Private
+
+exports.removeFromCart = async (req,res) => {
+          try {
+                    const { bookId} = req.params;
+
+                    const cart = await Cart.findOne({ user:req.user._id});
+                    if (!cart) {
+                              return res.status(400).json({ message : "Cart not found!"});
+                    }
+
+                    cart.items = cart.items.findIndex(
+                              (item)=> item.book.toString() !== bookId
+                    );
+
+                    await cart.save();
+                    
+                    const updateCart = await Cart.findById(cart._id).populate({
+                              path:"items.book",
+                              select:"title author price coverImage stock",
+                    })
+
+                    res.json(updateCart)
+          }catch (error){
+                    return res.status(500).json({ message : error.message});
+          }
+}
