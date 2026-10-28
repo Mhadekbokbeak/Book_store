@@ -31,7 +31,7 @@ exports.addToCart = async (req,res) => {
                     const { bookId, quantity = 1} = req.body;
 
                     // check if have real book and have stock
-                    const book = await Book.findOne({bookId});
+                    const book = await Book.findById(req.body.bookId);
                     if(!book) {
                               return res.status(404).json({ message : 'Book not found'});
                     }
@@ -145,7 +145,8 @@ exports.removeFromCart = async (req,res) => {
                               return res.status(400).json({ message : "Cart not found!"});
                     }
 
-                    cart.items = cart.items.findIndex(
+                    // กรองเอาเฉพาะหนังสือเล่มที่ *ไม่ใช่* bookId ที่ต้องการลบ
+                    cart.items = cart.items.filter(
                               (item)=> item.book.toString() !== bookId
                     );
 
