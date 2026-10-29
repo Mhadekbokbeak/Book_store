@@ -101,3 +101,37 @@ exports.getOrderById = async (req,res) => {
                     return res.status(500).json({message:error.message});
           }
 }
+
+
+// @desc    Get all orders (Admin only)
+// @route   GET /api/orders/admin/all
+// @access  Private/Admin
+exports.getAllOrder = async (req,res) => {
+          try {
+                    const orders = await Order.findOne({}).populate('user','id name email');
+                    res.json(orders);
+          } catch (error) {
+                    return res.status(500).json({ message : error.message});
+          }
+}
+
+// @desc    Update order to delivered (Admin only)
+// @route   GET /api/orders/:id/deliver หรือ PUT /api/orders/:id/deliver
+// @access  Private/Admin
+exports.updateOrderToDelivered = async (req,res) => {
+          try {
+                    const order = await Order.findById(req.params.id);
+
+                    if(!order) {
+                              return res.status(404).json({ message : 'Order not found'});
+                    }
+
+                    order.idDelivered = true;
+                    order.deliveryAt = Date.now();
+
+                    const updatedOrder = await order.save();
+                    res.json(updatedOrder);
+          } catch (error) {
+                    return res.status(500).json({message:error.message});
+          }
+}
