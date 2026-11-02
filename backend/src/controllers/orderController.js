@@ -85,9 +85,9 @@ exports.getMyOrder = async (req,res) => {
 // @access  Private
 exports.getOrderById = async (req,res) => {
           try {
-                    const order = await Order.findById(req.body.id).populate('user','name email');
+                    const order = await Order.findById(req.params.id).populate('user','name email');
 
-                    if(order) {
+                    if(!order) {
                               return res.status(404).json({ message : 'Order not found'});
                     }
 
@@ -108,7 +108,7 @@ exports.getOrderById = async (req,res) => {
 // @access  Private/Admin
 exports.getAllOrder = async (req,res) => {
           try {
-                    const orders = await Order.findOne({}).populate('user','id name email');
+                    const orders = await Order.find({}).populate('user','id name email').sort({ createdAt:-1});
                     res.json(orders);
           } catch (error) {
                     return res.status(500).json({ message : error.message});

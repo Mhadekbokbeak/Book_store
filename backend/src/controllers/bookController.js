@@ -30,7 +30,7 @@ exports.getBooks = async (req,res) => {
                               .populate('category','name')
                               .limit(limit)
                               .skip(skip)
-                              .sort({ createAt : -1});
+                              .sort({ createdAt : -1});
                     res.json({
                               books,
                               page,
@@ -67,7 +67,7 @@ exports.createBook = async (req,res) => {
           try {
                     const { title , author, price, stock, description, coverImage, category } = req.body;
 
-                    const book = Book.create({
+                    const book = await Book.create({
                               title,
                               author,
                               price,

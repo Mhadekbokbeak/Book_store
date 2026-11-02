@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 
@@ -8,9 +8,27 @@ export default function AdminAddBook() {
   const [price, setPrice] = useState('');
   const [description, setDescription] = useState('');
   const [stock, setStock] = useState('');
+  const [category, setCategory] = useState('');
+  const [categories, setCategories] = useState([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await api.get('/categories');
+        setCategories(response.data);
+      } catch (fetchError) {
+        setError(fetchError.response?.data?.message || 'We could not load book categories.');
+      } finally {
+        setCategoriesLoading(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -24,6 +42,7 @@ export default function AdminAddBook() {
         price: Number(price),
         description,
         stock: Number(stock),
+        category,
       });
       alert('Your new book has been added!');
       navigate('/');
@@ -68,12 +87,36 @@ export default function AdminAddBook() {
           />
         </div>
 
+        <div className="form-field">
+          <label className="form-label" htmlFor="book-category">Category</label>
+          <select
+            id="book-category"
+            value={category}
+            onChange={(event) => setCategory(event.target.value)}
+            className="form-control"
+            required
+            disabled={categoriesLoading || categories.length === 0}
+          >
+            <option value="">
+              {categoriesLoading ? 'Loading categories...' : 'Choose a category'}
+            </option>
+            {categories.map((item) => (
+              <option key={item._id} value={item._id}>{item.name}</option>
+            ))}
+          </select>
+          {!categoriesLoading && categories.length === 0 && (
+            <p className="form-hint">Create a category before adding books.</p>
+          )}
+        </div>
+
         <div className="form-row">
           <div className="form-field">
             <label className="form-label" htmlFor="book-price">Price (THB)</label>
             <input
               id="book-price"
               type="number"
+              min="0"
+              step="0.01"
               value={price}
               onChange={(e) => setPrice(e.target.value)}
               className="form-control"
@@ -85,6 +128,8 @@ export default function AdminAddBook() {
             <input
               id="book-stock"
               type="number"
+              min="0"
+              step="1"
               value={stock}
               onChange={(e) => setStock(e.target.value)}
               className="form-control"
@@ -106,7 +151,7 @@ export default function AdminAddBook() {
 
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || categoriesLoading || categories.length === 0}
           className="button form-submit"
         >
           {loading ? 'Adding your book...' : <>Add book to the shelves <span aria-hidden="true">→</span></>}
