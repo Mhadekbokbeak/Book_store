@@ -1133,6 +1133,69 @@ select:focus-visible {
   font-size: 0.82rem;
 }
 
+.admin-category-card {
+  margin-bottom: 38px;
+}
+
+.admin-section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.admin-section-heading .eyebrow {
+  margin-bottom: 7px;
+}
+
+.admin-section-icon {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  place-items: center;
+  border-radius: 50% 50% 50% 9px;
+  background: var(--surface-muted);
+  font-size: 1.15rem;
+  transform: rotate(9deg);
+}
+
+.admin-section-description {
+  margin-top: 10px;
+  font-size: 0.9rem;
+}
+
+.admin-category-card .form-stack {
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.admin-category-card .form-submit,
+.admin-book-form .form-submit {
+  width: auto;
+  min-width: 210px;
+  align-self: flex-start;
+}
+
+.form-success {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 11px 14px;
+  background: var(--surface-muted);
+  color: var(--ink);
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+
+.admin-book-section {
+  display: grid;
+  gap: 18px;
+}
+
+.admin-book-form {
+  margin-top: 0;
+}
+
 @keyframes float-gently {
   0%, 100% {
     transform: translateY(0) rotate(0);
