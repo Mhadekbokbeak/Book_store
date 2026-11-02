@@ -1,5 +1,20 @@
 # React + Vite
 
+## Backend API URL
+
+The frontend reads its backend URL from `VITE_API_URL`. The value must include
+the `/api` path, for example:
+
+```env
+VITE_API_URL=http://localhost:5000/api
+```
+
+For local development, copy `.env.example` to `.env`. For deployment, set
+`VITE_API_URL` in the frontend hosting provider's environment settings to your
+deployed backend URL, such as `https://your-backend.example.com/api`, then
+rebuild or redeploy the frontend. Vite embeds `VITE_` variables into the
+frontend at build time, so this value is public and must not contain secrets.
+
 This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
 
 Currently, two official plugins are available:
