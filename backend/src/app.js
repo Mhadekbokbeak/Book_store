@@ -1,3 +1,10 @@
+// Run directly (`node src/app.js`, the old start command some hosts still use):
+// load .env before anything reads process.env. The server itself starts at the bottom of this file.
+const runDirectly = require.main === module;
+if (runDirectly) {
+          require("dotenv").config();
+}
+
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
@@ -5,8 +12,9 @@ const { getAllowedOrigins } = require("./config/env");
 const { securityHeaders } = require("./middleware/securityMiddleware");
 const { notFound, errorHandler } = require("./middleware/errorMiddleware");
 
-// Builds the Express app only. server.js loads env, connects to MongoDB and starts listening.
+// Builds the Express app. server.js loads env, connects to MongoDB and starts listening.
 // Keeping them apart lets tests start the app on a random port with a test database.
+// `npm start` (node src/server.js) is the normal way to run it; node src/app.js also works (see bottom).
 const app = express();
 const allowedOrigins = getAllowedOrigins();
 
@@ -51,3 +59,10 @@ app.use(notFound);
 app.use(errorHandler);
 
 module.exports = app;
+
+// Started with `node src/app.js`: hand over to server.js, which validates env,
+// connects to MongoDB and listens. Without this the process would build the app and exit silently.
+// (module.exports is set above, so server.js receives this same app.)
+if (runDirectly) {
+          require("./server");
+}
