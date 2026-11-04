@@ -22,4 +22,17 @@ api.interceptors.request.use((config) => {
           return config;
 });
 
+// If the server says the token is invalid/expired, drop it and tell AuthContext to log out
+api.interceptors.response.use(
+          (response) => response,
+          (error) => {
+                    if (error.response?.status === 401 && localStorage.getItem('token')) {
+                              localStorage.removeItem('token');
+                              window.dispatchEvent(new Event('auth:logout'));
+                    }
+
+                    return Promise.reject(error);
+          }
+);
+
 export default api;

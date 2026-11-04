@@ -22,7 +22,10 @@ const bookSchema = new mongoose.Schema({
                     required:[true,'Stock count is required'],
                     default:0,
                     min:[0,'Stock cannot be negative'],
-
+                    validate:{
+                              validator:Number.isInteger,
+                              message:'Stock must be a whole number',
+                    },
           },
           description:{
                     type:String,

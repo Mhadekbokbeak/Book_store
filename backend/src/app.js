@@ -1,42 +1,25 @@
 const express = require("express");
-const dotenv = require("dotenv");
 const cors = require("cors");
 const mongoose = require("mongoose");
-const connectDB = require("./config/db");
+const { getAllowedOrigins } = require("./config/env");
+const { securityHeaders } = require("./middleware/securityMiddleware");
+const { notFound, errorHandler } = require("./middleware/errorMiddleware");
 
-dotenv.config();
-
-const requiredEnv = ['MONGO_URI', 'JWT_SECRET'];
-const missingEnv = requiredEnv.filter((key) => !process.env[key]);
-
-if (missingEnv.length > 0) {
-          console.error(`Missing required environment variables: ${missingEnv.join(', ')}`);
-          process.exit(1);
-}
-
-if (process.env.NODE_ENV === 'production') {
-          if (!process.env.CLIENT_ORIGINS) {
-                    console.error('CLIENT_ORIGINS must be configured in production.');
-                    process.exit(1);
-          }
-
-          if (process.env.JWT_SECRET.length < 32) {
-                    console.error('JWT_SECRET must be at least 32 characters in production.');
-                    process.exit(1);
-          }
-}
-
+// Builds the Express app only. server.js loads env, connects to MongoDB and starts listening.
+// Keeping them apart lets tests start the app on a random port with a test database.
 const app = express();
-const allowedOrigins = (process.env.CLIENT_ORIGINS || 'http://localhost:5173')
-          .split(',')
-          .map((origin) => origin.trim())
-          .filter(Boolean);
+const allowedOrigins = getAllowedOrigins();
 
-if (process.env.NODE_ENV === 'production' && allowedOrigins.length === 0) {
-          console.error('CLIENT_ORIGINS must contain at least one valid origin.');
-          process.exit(1);
+app.disable('x-powered-by');
+
+// Behind a hosting proxy, req.ip is the proxy's IP unless we trust it.
+// Set TRUST_PROXY to the number of proxies in front of the app (usually 1).
+const trustProxyHops = Number(process.env.TRUST_PROXY);
+if (Number.isInteger(trustProxyHops) && trustProxyHops > 0) {
+          app.set('trust proxy', trustProxyHops);
 }
 
+app.use(securityHeaders);
 app.use(cors({
           origin(origin, callback) {
                     if (!origin || allowedOrigins.includes(origin)) {
@@ -46,7 +29,7 @@ app.use(cors({
                     return callback(null, false);
           },
 }));
-app.use(express.json());
+app.use(express.json({ limit: '10kb' }));
 
 // Routes
 app.use('/api/auth', require('./routes/authRoutes'));
@@ -63,18 +46,8 @@ app.get("/api/health", (req,res) => {
                     timestamp:new Date().toISOString()
           });
 });
-const PORT = process.env.PORT || 5000;
 
-const startServer = async () => {
-          try {
-                    await connectDB();
-                    app.listen(PORT, () => {
-                              console.log(`Server is listening on port ${PORT}`);
-                    });
-          } catch (error) {
-                    console.error(`Server startup failed: ${error.message}`);
-                    process.exit(1);
-          }
-};
+app.use(notFound);
+app.use(errorHandler);
 
-startServer();
+module.exports = app;

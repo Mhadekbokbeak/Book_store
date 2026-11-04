@@ -1,5 +1,5 @@
 import { useState, useContext } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 
 export default function Login() {
@@ -8,12 +8,14 @@ export default function Login() {
   const [error, setError] = useState('');
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       await login(email, password);
-      navigate('/');
+      // Go back to the page ProtectedRoute sent us from, if any
+      navigate(location.state?.from || '/', { replace: true });
     } catch (err) {
       setError(err.response?.data?.message || 'We could not log you in. Please check your details and try again.');
     }

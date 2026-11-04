@@ -1,5 +1,8 @@
 const mongoose = require('mongoose');
 
+// Only cash on delivery is implemented. Add a method here only after its payment flow exists.
+const PAYMENT_METHODS = ['Cash on Delivery'];
+
 const orderSchema = new mongoose.Schema(
           {
                     user:{
@@ -15,20 +18,22 @@ const orderSchema = new mongoose.Schema(
                                                   ref:"Book",
                                         },
                                         title:{type:String,required:true},
-                                        quantity:{type:Number,required:true},
-                                        price:{type:Number,min:0},
+                                        quantity:{type:Number,required:true,min:1},
+                                        price:{type:Number,required:true,min:0},
                               },
                     ],
                     shippingAddress:{
-                              address:{type:String,required:true},
-                              city:{type:String,required:true},
-                              postalCode:{type:Number,required:true},
-                              country:{type:String,required:true},
+                              address:{type:String,required:true,trim:true},
+                              city:{type:String,required:true,trim:true},
+                              // String, not Number: keeps leading zeros ("01234") and allows letters ("SW1A 1AA")
+                              postalCode:{type:String,required:true,trim:true},
+                              country:{type:String,required:true,trim:true},
                     },
                     paymentMethod:{
                               type:String,
                               required:true,
-                              default:'Cash on delivery',
+                              enum:PAYMENT_METHODS,
+                              default:'Cash on Delivery',
                     },
                     totalPrice:{
                               type:Number,
@@ -44,7 +49,7 @@ const orderSchema = new mongoose.Schema(
                               type:Date,
 
                     },
-                    idDelivered:{
+                    isDelivered:{
                               type:Boolean,
                               required:true,
                               default:false,
@@ -57,3 +62,4 @@ const orderSchema = new mongoose.Schema(
 );
 
 module.exports = mongoose.model("Order",orderSchema);
+module.exports.PAYMENT_METHODS = PAYMENT_METHODS;

@@ -33,6 +33,11 @@ export const AuthProvider = ({ children}) => {
                     } else {
                               setLoading(false);
                     };
+
+                    // api.js fires this when any request gets 401 (expired or invalid token)
+                    const handleLogout = () => setUser(null);
+                    window.addEventListener('auth:logout', handleLogout);
+                    return () => window.removeEventListener('auth:logout', handleLogout);
           },[]);
 
           

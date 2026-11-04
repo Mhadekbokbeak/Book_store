@@ -41,8 +41,8 @@ export default function MyOrders() {
             <article key={order._id} className="content-card order-card">
               <div className="order-header">
                 <span className="order-id">Order #{order._id}</span>
-                <span className={`order-status${order.idDelivered ? '' : ' pending'}`}>
-                  {order.idDelivered ? 'Delivered' : 'On its way soon'}
+                <span className={`order-status${order.isDelivered ? '' : ' pending'}`}>
+                  {order.isDelivered ? 'Delivered' : 'On its way soon'}
                 </span>
               </div>
 

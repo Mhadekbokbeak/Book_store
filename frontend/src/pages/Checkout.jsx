@@ -102,7 +102,8 @@ export default function Checkout() {
             className="form-control"
           >
             <option value="Cash on Delivery">Cash on delivery</option>
-            <option value="Credit Card">Credit or debit card</option>
+            {/* No payment gateway yet; the backend rejects card orders */}
+            <option value="Credit Card" disabled>Credit or debit card (coming soon)</option>
           </select>
         </div>
 

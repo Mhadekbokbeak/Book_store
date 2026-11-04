@@ -1,71 +1,31 @@
-const Category = require("../models/Category");
+const categoryService = require("../services/categoryService");
 
 // @desc Get all categories
-// @route Get /api/categories
-// @access Publice
+// @route GET /api/categories
+// @access Public
 exports.getCategories = async (req,res) => {
-          try {
-                    const categories = await Category.find().sort({ name:1 });
-                    res.json(categories);
-          } catch (error) {
-                    return res.status(500).json({ message : error.message});
-          }
+          res.json(await categoryService.getCategories());
 };
 
-
-// @desc Create a new category 
+// @desc Create a new category
 // @route POST /api/categories
-// @acess Private/Admin
+// @access Private/Admin
 exports.createCategory = async (req,res) => {
-          try {
-                    const { name , description } = req.body;
-
-                    const existingCategory = await Category.findOne({ name });
-                    if (existingCategory) {
-                              return res.status(400).json({ message : ' Category already exists'});
-                    }
-
-                    const category = await Category.create({ name , description});
-                    res.status(201).json(category);
-          } catch (error) {
-                    return res.status(500).json({message:error.message});
-          }
+          const category = await categoryService.createCategory(req.body);
+          res.status(201).json(category);
 };
 
 // @desc Update category
-// @route PUT /api/category/:id
-// @acess Private/Admin
+// @route PUT /api/categories/:id
+// @access Private/Admin
 exports.updateCategory = async (req,res) => {
-          try {
-                    const category = await Category.findByIdAndUpdate(
-                              req.params.id,
-                              req.body,
-                              { new : true,runValidators:true}
-                    );
-
-                    if (!category) {
-                              return res.status(404).json({ message: 'Category is not found'});
-                    };
-
-                    res.json(category);
-          } catch (error){
-                    return res.status(500).json({message : error.message});
-          }
+          res.json(await categoryService.updateCategory(req.params.id, req.body));
 };
 
-// @desc Delete category
-// @route DELETE /api/category/:id
-// @acess Private/Admin
+// @desc Delete category (only when no book uses it)
+// @route DELETE /api/categories/:id
+// @access Private/Admin
 exports.deleteCategory = async (req,res) => {
-          try {
-                    const category = await Category.findByIdAndDelete(req.params.id);
-
-                    if (!category) {
-                              return res.status(404).json({ message: 'Category is not found'});
-                    };
-
-                    res.json({ message : 'Category deleted successfully'});
-          } catch (error){
-                    return res.status(500).json({ message : error.message});
-          }
+          await categoryService.deleteCategory(req.params.id);
+          res.json({ message : 'Category deleted successfully'});
 };

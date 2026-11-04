@@ -2,11 +2,12 @@
   "name": "backend",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "src/server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node src/app.js",
-    "dev": "nodemon src/app.js "
+    "test": "node --test --test-concurrency=1 \"test/**/*.test.js\"",
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "migrate:orders": "node scripts/migrateOrders.js"
   },
   "keywords": [],
   "author": "",
