@@ -9,6 +9,7 @@ import Checkout from './pages/Checkout';
 import MyOrders from './pages/MyOrders';
 import Profile from './pages/Profile';
 import AdminAddBook from './pages/AdminAddBook';
+import AdminCategories from './pages/AdminCategories';
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
           <Route path="/orders" element={<ProtectedRoute><MyOrders /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
           <Route path="/admin/add-book" element={<ProtectedRoute adminOnly><AdminAddBook /></ProtectedRoute>} />
+          <Route path="/admin/categories" element={<ProtectedRoute adminOnly><AdminCategories /></ProtectedRoute>} />
         </Routes>
       </div>
     </Router>

@@ -76,6 +76,12 @@ permissions, the concurrent checkout, and the data migration.
 
 ### A friendly frontend
 
+- Designed for right-handed use: the main action is always bottom-right, delete
+  buttons stay away from it, and the hamburger menu sits top-right and slides
+  in from the right.
+- Pop-ups (native `<dialog>`) for adding to the cart, placing an order, and
+  confirming deletes, which turn into bottom sheets on phones.
+- Category filter (kept in the URL) and "Load more" paging on the shop page.
 - Protected routes for logged-in and admin-only pages.
 - Automatic logout when the token expires, then a return to the original page
   after logging in again.
@@ -91,9 +97,9 @@ permissions, the concurrent checkout, and the data migration.
 | Checkout with cash on delivery | Mark orders delivered (cash orders become paid) |
 | Order history and delivery status | |
 
-The admin page in the frontend currently covers creating categories and adding
-books. Editing, deleting, viewing all orders, and marking delivery are
-available through the API.
+In the frontend, admins can manage categories (create, rename, delete), add
+books, and delete books from the shop page. Editing books, viewing all orders,
+and marking delivery are available through the API.
 
 ## API overview
 

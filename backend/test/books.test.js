@@ -95,6 +95,22 @@ describe('categories and books', () => {
                     assert.equal(cart.body.items.length, 0);
           });
 
+          it('renames a category, rejects a duplicate or empty name, and keeps other fields unchanged', async () => {
+                    const poetry = await request('POST', '/categories', { token: admin.token, body: { name: 'Poetry', description: 'Verse' } });
+
+                    const renamed = await request('PUT', `/categories/${poetry.body._id}`, { token: admin.token, body: { name: 'Poems' } });
+                    const duplicate = await request('PUT', `/categories/${poetry.body._id}`, { token: admin.token, body: { name: 'Fiction' } });
+                    const empty = await request('PUT', `/categories/${poetry.body._id}`, { token: admin.token, body: { name: '   ' } });
+                    const asUser = await request('PUT', `/categories/${poetry.body._id}`, { token: user.token, body: { name: 'Hacked' } });
+
+                    assert.equal(renamed.status, 200);
+                    assert.equal(renamed.body.name, 'Poems');
+                    assert.equal(renamed.body.description, 'Verse');
+                    assert.equal(duplicate.status, 409);
+                    assert.equal(empty.status, 400);
+                    assert.equal(asUser.status, 403);
+          });
+
           it('an empty category can be deleted', async () => {
                     const empty = await request('POST', '/categories', { token: admin.token, body: { name: 'Empty' } });
                     const res = await request('DELETE', `/categories/${empty.body._id}`, { token: admin.token });

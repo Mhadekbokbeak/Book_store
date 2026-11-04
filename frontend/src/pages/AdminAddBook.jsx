@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import api from '../services/api';
+import Modal from '../components/Modal';
+import { formatPrice } from '../utils/format';
 
 export default function AdminAddBook() {
   const [title, setTitle] = useState('');
@@ -18,7 +20,18 @@ export default function AdminAddBook() {
   const [categorySaving, setCategorySaving] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [addedBook, setAddedBook] = useState(null);
   const navigate = useNavigate();
+
+  // Keep the chosen category so several books can be added to the same shelf quickly
+  const resetBookForm = () => {
+    setTitle('');
+    setAuthor('');
+    setPrice('');
+    setDescription('');
+    setStock('');
+    setAddedBook(null);
+  };
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -70,7 +83,7 @@ export default function AdminAddBook() {
     setError('');
 
     try {
-      await api.post('/books', {
+      const response = await api.post('/books', {
         title,
         author,
         price: Number(price),
@@ -78,8 +91,7 @@ export default function AdminAddBook() {
         stock: Number(stock),
         category,
       });
-      alert('Your new book has been added!');
-      navigate('/');
+      setAddedBook(response.data);
     } catch (err) {
       setError(err.response?.data?.message || 'We could not add this book. Please make sure you have admin access.');
     } finally {
@@ -105,6 +117,7 @@ export default function AdminAddBook() {
         </div>
         <p className="page-description admin-section-description">
           Add a shelf label, then it will be selected for your new book.
+          {' '}<Link to="/admin/categories" className="text-link">Manage all categories</Link>
         </p>
 
         <form onSubmit={handleCreateCategory} className="form-stack">
@@ -255,6 +268,42 @@ export default function AdminAddBook() {
         </button>
       </form>
       </section>
+
+      <Modal
+        open={Boolean(addedBook)}
+        onClose={resetBookForm}
+        icon="✳"
+        title="Book added to the shelves"
+        actions={
+          <>
+            <button type="button" className="button-secondary" onClick={() => navigate('/')}>View shop</button>
+            <button type="button" className="button" onClick={resetBookForm} data-autofocus>
+              Add another <span aria-hidden="true">→</span>
+            </button>
+          </>
+        }
+      >
+        {addedBook && (
+          <dl className="modal-summary">
+            <div>
+              <dt>Title</dt>
+              <dd>{addedBook.title}</dd>
+            </div>
+            <div>
+              <dt>Author</dt>
+              <dd>{addedBook.author}</dd>
+            </div>
+            <div>
+              <dt>Price</dt>
+              <dd><strong>{formatPrice(addedBook.price)}</strong></dd>
+            </div>
+            <div>
+              <dt>In stock</dt>
+              <dd>{addedBook.stock}</dd>
+            </div>
+          </dl>
+        )}
+      </Modal>
     </main>
   );
 }
