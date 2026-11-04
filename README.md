@@ -1,4 +1,160 @@
-# Book Store
+# Soul BookShop
+
+A full-stack online bookstore: customers browse and search books, keep a cart,
+and check out with cash on delivery; admins manage categories, books, and
+deliveries.
+
+**Stack:** Node.js · Express 5 · MongoDB / Mongoose 9 · JWT · bcrypt ·
+React 19 · Vite · React Router 7 · Tailwind CSS 4
+
+## Highlights
+
+### Checkout that cannot oversell
+
+The usual "read stock → check → save" approach breaks when two customers buy
+the last copy at the same time: both read `stock = 1`, both pass the check.
+Here each book's stock is decremented by **one atomic, conditional query**:
+
+```js
+Book.findOneAndUpdate(
+  { _id: bookId, stock: { $gte: quantity } }, // matches only if enough is left
+  { $inc: { stock: -quantity } }
+);
+```
+
+If any step after that fails (another book is out of stock, the order cannot be
+saved), the stock already taken is given back. A test fires three parallel
+checkouts at a book with one copy and asserts exactly one succeeds and stock
+ends at 0.
+
+Each order also stores a copy of every book's title and price, so past orders
+stay correct after prices change or books are deleted.
+
+### Clear layered architecture
+
+```
+route → middleware (auth, admin, rate limit) → controller → service → model
+                                    errors from any layer → central error handler
+```
+
+- **Controllers** are one or two lines: they translate HTTP to a service call.
+- **Services** (`backend/src/services`) hold all business rules, so they can be
+  read and tested without thinking about Express.
+- **One error handler** turns validation, cast, and duplicate-key errors into
+  `400` / `409` responses, and hides internal details behind a generic `500`.
+
+### Security built in
+
+- Passwords hashed with bcrypt and never returned by the API.
+- The user's role is loaded from the database on every request, never trusted
+  from the token or the request body. Registration can never create an admin.
+- Every input is validated: ObjectIds, whole-number quantities, string lengths,
+  email format, bounded pagination.
+- Login rejects operator objects such as `{ "$gt": "" }` (NoSQL injection).
+- Search keywords are escaped before use in a regex (no ReDoS).
+- Updates accept only whitelisted fields (no mass assignment).
+- Rate limiting on login/register, security headers, a 10 kb body limit, and a
+  strict CORS allowlist.
+- The server refuses to start with missing secrets, or in production with a
+  short `JWT_SECRET`.
+
+### Data stays consistent
+
+- A category that still has books cannot be deleted.
+- Deleting a book removes it from every cart; carts never contain a missing book.
+- One cart per user, enforced by a unique index and an upsert, so parallel
+  requests cannot create two carts.
+- Card payments are rejected until a payment gateway exists.
+- A re-runnable migration script upgrades orders saved in the old format.
+
+### Tested with zero extra dependencies
+
+25 tests use Node's built-in `node:test` and `fetch`. They start the real app
+on a random port against a throwaway database (which must have `test` in its
+name, so a real database is never wiped). They cover auth, validation,
+permissions, the concurrent checkout, and the data migration.
+
+### A friendly frontend
+
+- Protected routes for logged-in and admin-only pages.
+- Automatic logout when the token expires, then a return to the original page
+  after logging in again.
+- Light and dark theme.
+
+## Features
+
+| Customer | Admin |
+|---|---|
+| Register, log in, view profile | Create, edit, and delete categories |
+| Browse, search, and filter books with pagination | Add, edit, and delete books |
+| Cart: add, change quantity, remove | View all orders |
+| Checkout with cash on delivery | Mark orders delivered (cash orders become paid) |
+| Order history and delivery status | |
+
+The admin page in the frontend currently covers creating categories and adding
+books. Editing, deleting, viewing all orders, and marking delivery are
+available through the API.
+
+## API overview
+
+| Method | Path | Access |
+|---|---|---|
+| POST | `/api/auth/register`, `/api/auth/login` | Public (rate limited) |
+| GET | `/api/auth/me` | User |
+| GET | `/api/categories` | Public |
+| POST / PUT / DELETE | `/api/categories[/:id]` | Admin |
+| GET | `/api/books?keyword=&category=&page=&limit=`, `/api/books/:id` | Public |
+| POST / PUT / DELETE | `/api/books[/:id]` | Admin |
+| GET / POST | `/api/cart` | User |
+| PUT / DELETE | `/api/cart/:bookId` | User |
+| POST | `/api/orders` | User |
+| GET | `/api/orders/myorders` | User |
+| GET | `/api/orders/:id` | Owner or admin |
+| GET | `/api/orders/admin/all` | Admin |
+| PUT | `/api/orders/:id/delivery` | Admin |
+| GET | `/api/health` | Public |
+
+## Project structure
+
+```
+backend/
+  src/
+    server.js        load env, connect MongoDB, start listening
+    app.js           Express app: middleware, routes, error handling
+    config/          env validation, DB connection
+    routes/          URL → middleware → controller
+    controllers/     HTTP in/out only
+    services/        business logic
+    models/          Mongoose schemas
+    middleware/      auth, admin, rate limit, security headers, errors
+    utils/           validators, HttpError
+  scripts/           data migrations
+  test/              node:test suites
+frontend/
+  src/
+    pages/           Home, Cart, Checkout, MyOrders, Profile, Login, Register, AdminAddBook
+    components/      Navbar, ProtectedRoute
+    context/         AuthContext
+    services/        axios instance with token + 401 handling
+```
+
+## Run locally
+
+Requirements: Node.js 20.19+ and a MongoDB server.
+
+```sh
+# Backend (http://localhost:5000)
+cd backend
+cp .env.example .env   # then set JWT_SECRET
+npm install
+npm run dev
+
+# Frontend (http://localhost:5173), in a second terminal
+cd frontend
+cp .env.example .env
+npm install
+npm run dev
+```
 
 ## Backend deployment
 
