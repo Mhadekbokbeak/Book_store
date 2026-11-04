@@ -9,10 +9,12 @@ const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
 const { getAllowedOrigins } = require("./config/env");
+const connectDB = require("./config/db");
 const { securityHeaders } = require("./middleware/securityMiddleware");
 const { notFound, errorHandler } = require("./middleware/errorMiddleware");
 
-// Builds the Express app. server.js loads env, connects to MongoDB and starts listening.
+// server.js connects before listening; the middleware below also connects when
+// Vercel loads this Express app directly.
 // Keeping them apart lets tests start the app on a random port with a test database.
 // `npm start` (node src/server.js) is the normal way to run it; node src/app.js also works (see bottom).
 const app = express();
@@ -38,6 +40,20 @@ app.use(cors({
           },
 }));
 app.use(express.json({ limit: '10kb' }));
+
+app.use('/api', async (_req, res, next) => {
+          try {
+                    await connectDB();
+                    return next();
+          } catch (error) {
+                    console.error(`MongoDB connection failed: ${error.message}`);
+                    return res.status(503).json({
+                              status: 'UNAVAILABLE',
+                              message: 'Database is unavailable',
+                              timestamp: new Date().toISOString(),
+                    });
+          }
+});
 
 // Routes
 app.use('/api/auth', require('./routes/authRoutes'));

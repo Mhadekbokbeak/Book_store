@@ -180,9 +180,14 @@ the hosting provider:
   `1` on hosting platforms). Without it, login rate limiting counts all users
   as one IP.
 
-The backend will not start if required variables are missing, or if production
-is missing `CLIENT_ORIGINS` / has a short `JWT_SECRET`. Check
-`/api/health` after deployment.
+For Vercel, set the project Root Directory to `backend`. The Express app
+connects to MongoDB before handling API requests and reuses the connection
+across warm invocations; `/api/health` also checks the database connection.
+
+When started with `npm start`, the backend refuses to start if required
+variables are missing, or if production is missing `CLIENT_ORIGINS` / has a
+short `JWT_SECRET`. Check `/api/health` after deployment; it returns 503 when
+MongoDB is unavailable.
 
 ## Frontend deployment
 
