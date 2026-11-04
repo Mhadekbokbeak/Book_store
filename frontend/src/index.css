@@ -1311,6 +1311,13 @@ button.book-category:hover {
   padding: 0 22px;
 }
 
+/* Login / register panels are narrow: a full-width, centered button fits better than a right-aligned one */
+.account-panel .form-submit {
+  width: 100%;
+  justify-self: stretch;
+  justify-content: center;
+}
+
 .content-card {
   border-radius: 25px 25px 25px 8px;
 }
